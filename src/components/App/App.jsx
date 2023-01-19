@@ -1,37 +1,45 @@
+import React, { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { addContact, deleteContact, fetchContacts} from 'redux/operations';
+import { filterContacts } from 'redux/filterSlice';
+import { getContacts, getFilterResults } from 'redux/selectors';
+
 import { Contacts } from 'components/ContactList/ContactList';
 import Filter from 'components/Filter/Filter';
 import PhonebookForm from 'components/PhonebookForm/PhonebookForm';
-import React, { useEffect } from 'react'
+
 import { Container } from './App.styled';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { useDispatch, useSelector } from 'react-redux';
-import { filterContacts, getFilterResults } from 'redux/filterSlice';
-import { addContact, deleteContact, getContacts } from 'redux/contactsSlice';
-import { fetchContacts } from 'redux/operations';
+import Loader from 'components/Loader/Loader';
 
 
 const App = () => {
-  const contacts = useSelector(getContacts);
-  const filter = useSelector(getFilterResults);
-  const dispatch = useDispatch();
-  console.log(contacts);
-
+  const dispatch = useDispatch(); 
+  const { contacts, isLoading, error } = useSelector(getContacts);
+  const filter = useSelector(getFilterResults); 
+  console.log(contacts); 
+  
   useEffect(() => {
     dispatch(fetchContacts())
-  }, [dispatch])
+  }, [dispatch]);  
 
-  // useEffect(() => {
-  //   window.localStorage.setItem('contacts', JSON.stringify(contacts));
-  // }, [contacts])
-
-  const formSubmitHandler = event => { 
-    dispatch(addContact(event.name, event.number));
+  const formSubmitHandler = (contact, number) => { 
+    const repeatCheck = contacts.find(item => item.name.toLowerCase() === contact.name.toLowerCase());
+    
+    if (repeatCheck) {
+      toast.warn(`Name  ${contact.name}  is alredy in contacts!`);
+      return;
+    }
+    dispatch(addContact(contact, number));
+    toast.success(`You have added  ${contact.name}  in contacts`);
   }
+
   
   const handleDelete = item => {
     console.log(item);
-    dispatch(deleteContact(item));    
+    dispatch(deleteContact(item)); 
+    toast.info(`Contact is removed from List.`);   
    }
 
   const changeFilter = event => {
@@ -49,14 +57,19 @@ const getVisibleContacts = () => {
     return (
       <Container>
         <PhonebookForm onSubmit={formSubmitHandler} />
+        {isLoading && <Loader />}
+        {error && <h1 style={{ color: "orangered" }}>{error}</h1>}
         <Filter
           value={filter}
           onFilter={changeFilter} />
         <Contacts
+          // contactsFiltred={contacts}
           contactsFiltred={getVisibleContacts()}
           handleDelete={handleDelete}
         ></Contacts>
-        <ToastContainer autoClose={2000} position="top-right" theme="light" />
+        
+        {contacts.length === 0 && <h4 style={{ color: "", marginTop: "14px" }}>No contacts in Phonebook</h4>}
+        <ToastContainer autoClose={2000} position="top-right" theme="dark" />
       </Container>
   )
 }
