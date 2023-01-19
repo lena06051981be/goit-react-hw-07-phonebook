@@ -8,8 +8,12 @@ export const fetchContacts = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const response = await axios.get('/contacts');
+      console.log(response.data);
       return response.data;
+      // При успішному запиті повертаємо проміс із даними
     } catch (err) {
+      // При помилці запиту повертаємо проміс
+      // який буде відхилений з текстом помилки
       return thunkAPI.rejectWithValue(err.message);
     }
   }
