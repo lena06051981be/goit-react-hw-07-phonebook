@@ -8,6 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { filterContacts, getFilterResults } from 'redux/filterSlice';
 import { addContact, deleteContact, getContacts } from 'redux/contactsSlice';
+import { fetchContacts } from 'redux/operations';
 
 
 const App = () => {
@@ -17,8 +18,12 @@ const App = () => {
   console.log(contacts);
 
   useEffect(() => {
-    window.localStorage.setItem('contacts', JSON.stringify(contacts));
-  }, [contacts])
+    dispatch(fetchContacts())
+  }, [dispatch])
+
+  // useEffect(() => {
+  //   window.localStorage.setItem('contacts', JSON.stringify(contacts));
+  // }, [contacts])
 
   const formSubmitHandler = event => { 
     dispatch(addContact(event.name, event.number));
